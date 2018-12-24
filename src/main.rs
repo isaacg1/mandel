@@ -24,12 +24,12 @@ fn mandel_escape(c: Complex<f64>, max_iters: u64, pow: f64) -> Vec<Complex<f64>>
     out
 }
 
-fn make_mandel(h: u32, w: u32, height: u32, width: u32, max_iters: u64) -> Rgb<u8> {
-    let im = normalize(h, height);
-    let re = normalize(w, width) - 0.4;
+fn make_mandel(h: u32, w: u32, size: u32, samples: u64, max_iters: u64) -> Rgb<u8> {
+    let im = normalize(h, size);
+    let re = normalize(w, size) - 0.4;
     let c = Complex::new(re, im);
     let distance: f64 = 1.5;
-    let samples = 400;
+    let samples: i64 = samples as i64;
     let mut overall_color = (0.0, 0.0, 0.0);
     for i in -samples..=samples {
         let pow = 2.0 * distance.powf(i as f64 / samples as f64);
@@ -71,9 +71,10 @@ fn make_mandel(h: u32, w: u32, height: u32, width: u32, max_iters: u64) -> Rgb<u
 }
 fn main() {
     let max_iters = 100;
-    let height = 1000;
-    let width = height;
-    let make_mandel = |h, w| make_mandel(h, w, height, width, max_iters);
-    let buf = ImageBuffer::from_fn(height, width, &make_mandel);
-    buf.save("mandel.png").expect("Saved successfully");
+    assert!(std::env::args().count() >= 3);
+    let size = std::env::args().nth(1).unwrap().parse().unwrap();
+    let samples = std::env::args().nth(2).unwrap().parse().unwrap();
+    let make_mandel = |h, w| make_mandel(h, w, size, samples, max_iters);
+    let buf = ImageBuffer::from_fn(size, size, &make_mandel);
+    buf.save(format!("mandel-{}-{}.png", size, samples)).expect("Saved successfully");
 }
